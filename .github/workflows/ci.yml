@@ -108,6 +108,25 @@ jobs:
         env:
           TMUX_NOTEPAD_REQUIRE_TMUX: '1'
 
+  # Known vulnerabilities in the dependency tree. govulncheck reports only what
+  # this code can actually reach, so it stays quiet about the parts of a module
+  # nothing here calls — which is most of them, for a program that opens no
+  # network connections at all.
+  #
+  # The weekly schedule matters more than the pull-request runs: an advisory
+  # appears without anybody touching the code, and this is what notices.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+      - run: govulncheck ./...
+
   # Short runs, so a change that breaks the note parser or the config reader on
   # some input nobody thought of shows up in the pull request that made it.
   fuzz:
