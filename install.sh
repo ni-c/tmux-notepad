@@ -123,7 +123,9 @@ if [ "$UNINSTALL" -eq 1 ]; then
     cp -p "$TMUX_CONF" "$TMUX_CONF.before-$NAME"
     replace_file "$TMUX_CONF" "$(without_block "$TMUX_CONF")"
     info "Removed the $NAME block from $TMUX_CONF (previous version saved as $TMUX_CONF.before-$NAME)"
-    tmux has-session >/dev/null 2>&1 && tmux source-file "$TMUX_CONF" >/dev/null 2>&1 || true
+    if tmux has-session >/dev/null 2>&1; then
+      tmux source-file "$TMUX_CONF" >/dev/null 2>&1 || true
+    fi
   fi
   info "Left your notes and $CONFIG alone — those are yours to remove."
   exit 0
@@ -229,8 +231,9 @@ Re-run with --force to replace it, or with --no-bind and bind it yourself:
 }$block"
   info "Bound prefix+$key in $TMUX_CONF"
   if tmux has-session >/dev/null 2>&1; then
-    tmux source-file "$TMUX_CONF" >/dev/null 2>&1 &&
-      info "Reloaded your running tmux, so prefix+$key works now." || true
+    if tmux source-file "$TMUX_CONF" >/dev/null 2>&1; then
+      info "Reloaded your running tmux, so prefix+$key works now."
+    fi
   fi
 fi
 
