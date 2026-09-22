@@ -20,6 +20,19 @@ It reports only what this code can actually reach, so a module with a known
 issue in a part nothing here calls stays quiet — and something it does report
 is worth acting on.
 
+## Tests come with the change
+
+New functionality arrives with tests for it, and a bug fix arrives with a test
+that fails without the fix. Both go in the same pull request as the code — not
+afterwards.
+
+Cover the edges rather than the happy path, because that is where this program
+actually breaks: empty input and no input at all, the first and last entry, a
+file that ends without a newline, CRLF, a title that is only punctuation, a
+window too small for two columns. `FuzzParse` found two real bugs in headings
+that the table tests had walked straight past, so a new parsing rule is worth a
+seed in the fuzz corpus as well.
+
 ## The tests need tmux
 
 Most of what is worth testing here is what tmux does with a popup, so those
