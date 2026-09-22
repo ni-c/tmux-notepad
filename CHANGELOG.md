@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-09-22
+
 ### Fixed
 
 - An entry whose title ended in a hash was renamed the first time it was ticked
@@ -57,5 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   checksum of each platform archive baked in. With tpm, the binary is fetched
   on first use inside the popup, so tmux never waits on the network.
 
-[Unreleased]: https://github.com/ni-c/tmux-notepad/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ni-c/tmux-notepad/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/ni-c/tmux-notepad/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ni-c/tmux-notepad/releases/tag/v1.0.0
