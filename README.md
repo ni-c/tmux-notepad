@@ -3,6 +3,7 @@
 <!-- badges: start -->
 [![CI](https://github.com/ni-c/tmux-notepad/actions/workflows/ci.yml/badge.svg)](https://github.com/ni-c/tmux-notepad/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ni-c/tmux-notepad/badge)](https://scorecard.dev/viewer/?uri=github.com/ni-c/tmux-notepad)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14755/badge)](https://www.bestpractices.dev/projects/14755)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 <!-- badges: end -->
 
