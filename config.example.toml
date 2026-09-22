@@ -1,0 +1,55 @@
+# tmux-notepad configuration
+#
+# Copy this to ~/.config/tmux-notepad/config.toml and point it at your notes.
+# Every value below is a default; delete what you do not want to change.
+
+# Where notes are looked for. List as many directories as you like — a
+# directory that is not reachable is reported in the popup instead of being an
+# error, so a network share that is not mounted right now does no harm.
+[[sources]]
+name      = "Notes"
+path      = "~/notes"
+recursive = true
+exclude   = ["attachments"]
+
+# A second source, for prompts that belong to a project and are versioned with
+# it:
+#
+# [[sources]]
+# name = "Project"
+# path = "./docs/prompts"
+
+[behavior]
+# What to do with an entry once it has been pasted:
+#   "checkmark"  tick it off in the note, as "# ✓ Title"
+#   "none"       leave the file alone
+mark_done = "checkmark"
+
+# Send the heading along with the text below it. Off by default, because the
+# heading is a label — and in a shell it would be a broken command.
+include_title = false
+
+# Close the popup after pasting, so the target pane has the focus and you can
+# press Enter. Tab always pastes without closing, whatever this says.
+close_on_send = true
+
+# Re-read the note when it changes on disk, so edits made in another editor or
+# a web UI show up while the popup is open.
+watch = true
+
+# Command for the "open in editor" key. Falls back to $VISUAL, then $EDITOR.
+# editor = "nvim"
+
+# Popup geometry used when there is no remembered one. Width and height accept
+# cells or a percentage; x and y accept cells or "C" for centred. Moving or
+# resizing the window with the keys remembers the new geometry.
+[window]
+width  = "80%"
+height = "80%"
+x      = "C"
+y      = "C"
+
+[ui]
+# "auto" follows the terminal's background; "dark", "light" and "notty" force
+# a style.
+theme = "auto"
