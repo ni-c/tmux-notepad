@@ -29,10 +29,19 @@ if command -v "$NAME" >/dev/null 2>&1; then
   exec "$NAME" "$@"
 fi
 
+# Everything below writes to stderr, so the message and this prompt come out in
+# the order they were written rather than interleaved by two buffers.
 pause() {
-  printf '\nPress any key to close.'
-  read -r -n 1 -s </dev/tty 2>/dev/null || read -r </dev/tty 2>/dev/null || true
-  printf '\n'
+  # /dev/tty exists as a device node even where there is no terminal behind it,
+  # so opening it is the only real test — and the failure has to be swallowed
+  # here, or bash prints "No such device or address" of its own accord.
+  if ! { exec 3</dev/tty; } 2>/dev/null; then
+    return 0 # nothing to wait on: a pipe, a test, a runner
+  fi
+  printf '\nPress any key to close.' >&2
+  { read -r -n 1 -s <&3 || read -r <&3 || true; } 2>/dev/null
+  exec 3<&-
+  printf '\n' >&2
 }
 
 # -E closes the popup the moment this script exits, so an error printed without
@@ -57,7 +66,7 @@ version=''
 # Two panes can reach this point at the same time. The loser waits for the
 # winner's binary rather than starting a second download into the same path.
 if ! mkdir "$LOCK" 2>/dev/null; then
-  printf '%s: another pane is installing it, waiting …\n' "$NAME"
+  printf '%s: another pane is installing it, waiting …\n' "$NAME" >&2
   for _ in $(seq 1 60); do
     sleep 1
     [ -x "$BIN" ] && exec "$BIN" "$@"
@@ -66,7 +75,7 @@ if ! mkdir "$LOCK" 2>/dev/null; then
 fi
 trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 
-printf '%s: installing %s …\n' "$NAME" "${version:+version $version}"
+printf '%s: installing %s …\n' "$NAME" "${version:+version $version}" >&2
 
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/$NAME-boot.XXXXXX")
 trap 'rm -rf "$tmp"; rmdir "$LOCK" 2>/dev/null || true' EXIT
