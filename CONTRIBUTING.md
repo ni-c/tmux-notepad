@@ -7,8 +7,18 @@ make check
 ```
 
 That is `gofmt`, `go vet` and the tests. CI runs the same thing on Linux and
-macOS, plus `golangci-lint`, short fuzzing runs, a cross-compile of all four
-release targets and an end-to-end run of the installer.
+macOS, plus `golangci-lint`, `govulncheck`, short fuzzing runs, a cross-compile
+of all four release targets and an end-to-end run of the installer.
+
+If a dependency bump is what you are changing, run the vulnerability check too:
+
+```sh
+go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+```
+
+It reports only what this code can actually reach, so a module with a known
+issue in a part nothing here calls stays quiet — and something it does report
+is worth acting on.
 
 ## The tests need tmux
 
