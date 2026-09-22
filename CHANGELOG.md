@@ -10,6 +10,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- An entry whose title ended in a hash was renamed the first time it was ticked
+  off: `# C#` parsed as `C`, because any trailing hash was trimmed as a closing
+  sequence. CommonMark only treats one as decoration when a space sets it off,
+  which is now what happens. Headings that ATX cannot express at all — `# # #`,
+  `# 0 # #`, `# ✓#` — are no longer entries, because rendering them back would
+  drop them out of the note. Found by `FuzzParse`.
+- `make install` failed on macOS: `install -D` is a GNU extension.
+
+### Security
+
+- Updated three dependencies with known vulnerabilities. Two were reachable from
+  this code: [GO-2026-5970](https://pkg.go.dev/vuln/GO-2026-5970), an infinite
+  loop on invalid input in `golang.org/x/text`, and
+  [GO-2026-5320](https://pkg.go.dev/vuln/GO-2026-5320), an XSS in the HTML
+  renderer of `github.com/yuin/goldmark` reached through glamour — which renders
+  to ANSI rather than to a browser, so it had nowhere to land.
+  [GO-2026-5942](https://pkg.go.dev/vuln/GO-2026-5942) in
+  `golang.org/x/net/dns/dnsmessage` was not reachable, since this program opens
+  no network connections; it was updated anyway.
+- CI now runs `govulncheck` on every pull request and weekly.
+
 ## [1.0.0] - 2026-09-22
 
 ### Added
