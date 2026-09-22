@@ -107,16 +107,15 @@ func Parse(src string) *Doc {
 		if fence.open {
 			continue
 		}
-		title, ok := headingTitle(line)
+		title, done, ok := entryHeading(line)
 		if !ok {
 			continue
 		}
 		if n := len(items); n > 0 {
 			items[n-1].EndLine = i - 1
 		}
-		clean, done := splitDone(title)
 		items = append(items, Item{
-			Title:       clean,
+			Title:       title,
 			Done:        done,
 			HeadingLine: i,
 			EndLine:     len(doc.Lines) - 1,
@@ -154,14 +153,54 @@ func headingTitle(line string) (string, bool) {
 	if rest[0] != ' ' && rest[0] != '\t' {
 		return "", false // "#hashtag" is not a heading
 	}
-	title := strings.TrimSpace(rest)
-	// A closing sequence of hashes is decoration, not part of the title.
-	title = strings.TrimRight(title, "#")
-	title = strings.TrimSpace(title)
+	title := stripClosingHashes(strings.TrimSpace(rest))
 	if title == "" {
 		return "", false
 	}
 	return title, true
+}
+
+// entryHeading reports whether line starts an entry, and returns the title and
+// done state as they would be stored.
+//
+// Being a valid heading is not enough: it also has to survive being written
+// back. MarkDone rewrites a heading as MarkTitle renders it, and a few titles
+// come back shorter than they went in — "#" from "# # #", "0 #" from
+// "# 0 # #", or the "#" left over once the done marker is taken off "# ✓#".
+// Each of those would rename the entry, or drop it out of the note entirely,
+// the first time it was ticked off. ATX cannot hold them, so they are not
+// entries, and the round trip below is what decides that rather than a list of
+// special cases.
+func entryHeading(line string) (title string, done bool, ok bool) {
+	heading, ok := headingTitle(line)
+	if !ok {
+		return "", false, false
+	}
+	title, done = splitDone(heading)
+
+	written, ok := headingTitle(MarkTitle(title, done))
+	if !ok {
+		return "", false, false
+	}
+	if readBack, doneBack := splitDone(written); readBack != title || doneBack != done {
+		return "", false, false
+	}
+	return title, done, true
+}
+
+// stripClosingHashes removes an ATX closing sequence from an already trimmed
+// heading text. A run of hashes at the end only closes the heading where a
+// space sets it off: "Real #" is the entry "Real", while "C#" is the entry
+// "C#". A text of nothing but hashes closes to nothing at all.
+func stripClosingHashes(title string) string {
+	i := strings.LastIndexFunc(title, func(r rune) bool { return r != '#' })
+	if i < 0 {
+		return ""
+	}
+	if title[i] == ' ' || title[i] == '\t' {
+		return strings.TrimSpace(title[:i+1])
+	}
+	return title
 }
 
 // splitDone separates the done marker from a title.

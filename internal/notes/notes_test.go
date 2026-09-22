@@ -91,6 +91,43 @@ func TestParseFenceNeedsMatchingClose(t *testing.T) {
 	}
 }
 
+func TestParseRejectsATitleItCouldNotWriteBack(t *testing.T) {
+	// "# # #" is a heading whose closing sequence leaves "#" as the title. That
+	// title cannot be rendered again: MarkTitle would produce "# #", where the
+	// trailing hash reads as a closing sequence once more and nothing is left.
+	// Accepting it would mean the entry disappears the first time it is ticked
+	// off and back on. Found by FuzzParse.
+	for _, src := range []string{
+		"# # #\n",     // title would be "#", which renders back to nothing
+		"#   #   #\n", // the same with more spaces
+		"# ## #\n",
+		"# 0 # #\n", // title would be "0 #", which renders back to "0"
+		"# a #  #\n",
+		"# ✓#\n", // done marker off leaves "#", which renders back to ""
+	} {
+		if got := titles(Parse(src)); len(got) != 0 {
+			t.Fatalf("Parse(%q) gave %q, want no entries", src, got)
+		}
+	}
+
+	// The neighbouring cases still parse. A closing sequence only counts where
+	// a space sets it off, so a title that ends in a hash keeps it: "# C#" used
+	// to parse as "C", and the entry was renamed on the next write-back.
+	for _, tc := range []struct{ src, want string }{
+		{"# C#\n", "C#"},
+		{"# C# notes #\n", "C# notes"},
+		{"# #tag here\n", "#tag here"},
+		{"# Real #\n", "Real"},
+		{"# Real\n", "Real"},
+		{"# a # b #\n", "a # b"},
+	} {
+		got := titles(Parse(tc.src))
+		if len(got) != 1 || got[0] != tc.want {
+			t.Fatalf("Parse(%q) gave %q, want [%q]", tc.src, got, tc.want)
+		}
+	}
+}
+
 func TestParseFrontMatter(t *testing.T) {
 	src := "---\ntitle: notes\ntags: [a]\n---\n# One\nbody\n"
 	if got := titles(Parse(src)); len(got) != 1 || got[0] != "One" {

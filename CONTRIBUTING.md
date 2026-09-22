@@ -24,9 +24,21 @@ green and proves nothing. So CI sets
 TMUX_NOTEPAD_REQUIRE_TMUX=1 go test ./...
 ```
 
-which turns every one of those skips into a failure. If you are changing
-anything under `internal/tmuxio` or the key handling in `internal/ui`, run it
-that way too. See `internal/testenv`.
+which turns "tmux is not installed" and "the server would not start" into
+failures rather than skips.
+
+A second variable covers what CI cannot do. Some tests need a real *client*
+attached to that server, which goes through `script(1)` and a pseudo-terminal;
+on a hosted runner every such attach times out, so those tests skip there even
+under the variable above. On a machine with a terminal, run
+
+```sh
+TMUX_NOTEPAD_REQUIRE_TMUX=1 TMUX_NOTEPAD_REQUIRE_CLIENT=1 go test ./...
+```
+
+and they become failures too. Do that whenever you touch `internal/tmuxio` or
+the key handling in `internal/ui` — it is the only place those eight tests are
+actually enforced. See `internal/testenv`.
 
 ## Releasing
 

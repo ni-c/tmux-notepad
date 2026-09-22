@@ -2,12 +2,13 @@ package tmuxio
 
 import (
 	"fmt"
-	"github.com/ni-c/tmux-notepad/internal/testenv"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ni-c/tmux-notepad/internal/testenv"
 )
 
 func TestShellQuote(t *testing.T) {

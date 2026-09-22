@@ -2,13 +2,14 @@ package tmuxio
 
 import (
 	"fmt"
-	"github.com/ni-c/tmux-notepad/internal/testenv"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ni-c/tmux-notepad/internal/testenv"
 )
 
 // attachedServer starts a throwaway tmux server with a real client attached to
@@ -48,7 +49,7 @@ func attachedServer(t *testing.T, width, height int) string {
 			"; exec tmux -L "+socket+" attach -t t'\" /dev/null")
 	attach.Stdout, attach.Stderr = nil, nil
 	if err := attach.Start(); err != nil {
-		testenv.Missing(t, "cannot attach a client: %v", err)
+		testenv.NeedsClient(t, "cannot attach a client: %v", err)
 	}
 	t.Cleanup(func() {
 		_ = attach.Process.Kill()
@@ -72,7 +73,7 @@ func attachedServer(t *testing.T, width, height int) string {
 		}
 		time.Sleep(50 * time.Millisecond)
 	}
-	testenv.Missing(t, "no client attached in time")
+	testenv.NeedsClient(t, "no client attached in time")
 	return socket
 }
 

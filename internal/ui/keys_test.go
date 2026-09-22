@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"github.com/ni-c/tmux-notepad/internal/testenv"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,6 +12,8 @@ import (
 
 	"github.com/ni-c/tmux-notepad/internal/config"
 	"github.com/ni-c/tmux-notepad/internal/notes"
+
+	"github.com/ni-c/tmux-notepad/internal/testenv"
 )
 
 // key builds a KeyMsg for a single character.

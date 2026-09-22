@@ -89,7 +89,13 @@ jobs:
       # The tests that matter start a throwaway tmux server. Without tmux they
       # skip themselves, and a run of nothing but skips would be green — so tmux
       # is installed here and TMUX_NOTEPAD_REQUIRE_TMUX turns those skips into
-      # failures. See internal/testenv.
+      # failures.
+      #
+      # TMUX_NOTEPAD_REQUIRE_CLIENT is deliberately not set: the handful of
+      # tests that need a real client attached go through script(1) and a
+      # pseudo-terminal, and on a hosted runner every one of those attaches
+      # times out. They are enforced on a developer machine instead — see
+      # internal/testenv and CONTRIBUTING.md.
       - name: Install tmux
         run: |
           if [ "$RUNNER_OS" = macOS ]; then
