@@ -1,0 +1,32 @@
+version: 2
+updates:
+  # The Go dependencies. Five direct ones, and two dozen that come along with
+  # them.
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # bubbletea, bubbles, lipgloss and glamour are released against each other
+      # and share the charmbracelet/x/* helpers. Ungrouped, one of them bumps
+      # first and the build breaks on a version pair that was never meant to
+      # exist together.
+      charmbracelet:
+        patterns:
+          - github.com/charmbracelet/*
+      go:
+        update-types:
+          - minor
+          - patch
+
+  # The actions the workflows use.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # init and analyze are separate dependencies to Dependabot. Ungrouped, one
+      # of them bumps first and the version mismatch fails the codeql job.
+      codeql:
+        patterns:
+          - github/codeql-action*

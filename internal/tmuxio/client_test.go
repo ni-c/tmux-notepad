@@ -2,6 +2,7 @@ package tmuxio
 
 import (
 	"fmt"
+	"github.com/ni-c/tmux-notepad/internal/testenv"
 	"os"
 	"os/exec"
 	"strconv"
@@ -19,7 +20,7 @@ func attachedServer(t *testing.T, width, height int) string {
 	t.Helper()
 	for _, bin := range []string{"tmux", "script"} {
 		if _, err := exec.LookPath(bin); err != nil {
-			t.Skipf("%s not installed", bin)
+			testenv.Missing(t, "%s not installed", bin)
 		}
 	}
 	socket := "tmux-notepad-client-" + strings.NewReplacer("/", "-", " ", "-").Replace(t.Name())
@@ -38,7 +39,7 @@ func attachedServer(t *testing.T, width, height int) string {
 	size := strconv.Itoa
 	if out, err := exec.Command("tmux", "-L", socket, "new-session", "-d", "-s", "t",
 		"-x", size(width), "-y", size(height)).CombinedOutput(); err != nil {
-		t.Skipf("cannot start tmux: %v: %s", err, out)
+		testenv.Missing(t, "cannot start tmux: %v: %s", err, out)
 	}
 	t.Cleanup(kill)
 
@@ -47,7 +48,7 @@ func attachedServer(t *testing.T, width, height int) string {
 			"; exec tmux -L "+socket+" attach -t t'\" /dev/null")
 	attach.Stdout, attach.Stderr = nil, nil
 	if err := attach.Start(); err != nil {
-		t.Skipf("cannot attach a client: %v", err)
+		testenv.Missing(t, "cannot attach a client: %v", err)
 	}
 	t.Cleanup(func() {
 		_ = attach.Process.Kill()
@@ -57,7 +58,7 @@ func attachedServer(t *testing.T, width, height int) string {
 	env, err := exec.Command("tmux", "-L", socket, "display-message", "-p", "-t", "t",
 		"#{socket_path},#{pid},0").Output()
 	if err != nil {
-		t.Skipf("cannot query tmux: %v", err)
+		testenv.Missing(t, "cannot query tmux: %v", err)
 	}
 	t.Setenv("TMUX", strings.TrimSpace(string(env)))
 
@@ -71,7 +72,7 @@ func attachedServer(t *testing.T, width, height int) string {
 		}
 		time.Sleep(50 * time.Millisecond)
 	}
-	t.Skip("no client attached in time")
+	testenv.Missing(t, "no client attached in time")
 	return socket
 }
 
@@ -93,7 +94,7 @@ func TestClientSizeWithoutAClient(t *testing.T) {
 	socket := "tmux-notepad-client-detached"
 	_ = exec.Command("tmux", "-L", socket, "kill-server").Run()
 	if out, err := exec.Command("tmux", "-L", socket, "new-session", "-d", "-s", "t").CombinedOutput(); err != nil {
-		t.Skipf("cannot start tmux: %v: %s", err, out)
+		testenv.Missing(t, "cannot start tmux: %v: %s", err, out)
 	}
 	t.Cleanup(func() {
 		_ = exec.Command("tmux", "-L", socket, "kill-server").Run()
@@ -102,7 +103,7 @@ func TestClientSizeWithoutAClient(t *testing.T) {
 	env, err := exec.Command("tmux", "-L", socket, "display-message", "-p", "-t", "t",
 		"#{socket_path},#{pid},0").Output()
 	if err != nil {
-		t.Skip("cannot query tmux")
+		testenv.Missing(t, "cannot query tmux")
 	}
 	t.Setenv("TMUX", strings.TrimSpace(string(env)))
 
@@ -174,7 +175,7 @@ func TestSelectPane(t *testing.T) {
 	}
 	panes := strings.Fields(string(out))
 	if len(panes) < 2 {
-		t.Skip("expected two panes")
+		testenv.Missing(t, "expected two panes")
 	}
 	first := panes[0]
 

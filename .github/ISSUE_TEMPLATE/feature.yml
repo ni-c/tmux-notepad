@@ -1,0 +1,29 @@
+name: Feature request
+description: Something it should do and does not.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: >
+        The situation, not the solution. What are you reaching for the notepad
+        for when it falls short?
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: If you have something specific in mind, describe it here.
+
+  - type: checkboxes
+    id: enter
+    attributes:
+      label: One thing to confirm
+      options:
+        - label: >
+            This does not require tmux-notepad to submit anything on the user's
+            behalf. It pastes and never presses Enter, on purpose.
+          required: true

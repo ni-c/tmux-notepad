@@ -1,2 +1,5 @@
 /tmux-notepad
 /dist/
+/release-notes.md
+/coverage.out
+.DS_Store

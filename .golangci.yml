@@ -1,0 +1,51 @@
+version: '2'
+
+# gosec is deliberately absent. This program's whole job is to shell out to tmux
+# with arguments built from the user's own notes and config, which is G204 at
+# every call site. A lint job that is red by design teaches people to ignore it;
+# the tmux calls are reviewed in tmuxio instead, where the quoting lives.
+#
+# No misspell locale is set on purpose: the code says Behavior and [behavior],
+# and a UK locale would "correct" every one of them.
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - unused
+
+  settings:
+    errcheck:
+      # Closing or removing a temporary file that is about to be replaced, and
+      # writing usage text to a stream that is already broken, have no error
+      # worth handling — the caller is already on its way out.
+      exclude-functions:
+        - (*os.File).Close
+        - os.Remove
+        - fmt.Fprintf
+        - fmt.Fprintln
+
+  exclusions:
+    rules:
+      # A test that ignores the error from a helper it is about to assert on is
+      # making its point more clearly than one that checks twice.
+      - path: _test\.go
+        linters:
+          - errcheck
+
+      # SA4023 is right that run() never returns nil, and that is the design:
+      # on success it leaves through os.Exit(0) rather than returning, so that
+      # a popup being replaced at a new geometry does not linger on screen and
+      # race its successor. The trailing `return nil` only exists because the
+      # compiler cannot know os.Exit does not come back.
+      - path: cmd/tmux-notepad/main\.go
+        linters:
+          - staticcheck
+        text: SA4023
+
+formatters:
+  enable:
+    - gofmt

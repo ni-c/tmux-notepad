@@ -1,0 +1,57 @@
+name: Bug report
+description: Something does not work the way it says it does.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: Output of `tmux-notepad --version` and `tmux -V`.
+      placeholder: |
+        tmux-notepad 1.0.0
+        tmux 3.5a
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it
+      options:
+        - The one-liner (install.sh)
+        - tpm (set -g @plugin)
+        - go install
+        - make install from a checkout
+        - A distribution package
+        - Something else
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: System
+      description: Operating system and architecture — `uname -sm`.
+      placeholder: Linux x86_64
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: >
+        The relevant part of your `config.toml`, if the problem involves your
+        notes. Replace the paths if they are private — but say whether the
+        directory is on a network share, because that changes how reloading
+        behaves.
+      render: toml

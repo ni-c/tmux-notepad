@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"github.com/ni-c/tmux-notepad/internal/testenv"
 	"os"
 	"os/exec"
 	"strings"
@@ -42,7 +43,7 @@ func noteBody(t *testing.T, m Model) string {
 func tmuxTarget(t *testing.T) (socket, pane string) {
 	t.Helper()
 	if _, err := exec.LookPath("tmux"); err != nil {
-		t.Skip("tmux not installed")
+		testenv.Missing(t, "tmux not installed")
 	}
 	socket = "tmux-notepad-ui-" + strings.NewReplacer("/", "-", " ", "-").Replace(t.Name())
 	kill := func() {
@@ -58,14 +59,14 @@ func tmuxTarget(t *testing.T) (socket, pane string) {
 	kill()
 	if out, err := exec.Command("tmux", "-L", socket, "new-session", "-d", "-s", "t",
 		"-x", "80", "-y", "24", "cat").CombinedOutput(); err != nil {
-		t.Skipf("cannot start tmux: %v: %s", err, out)
+		testenv.Missing(t, "cannot start tmux: %v: %s", err, out)
 	}
 	t.Cleanup(kill)
 
 	env, err := exec.Command("tmux", "-L", socket, "display-message", "-p", "-t", "t",
 		"#{socket_path},#{pid},0").Output()
 	if err != nil {
-		t.Skipf("cannot query tmux: %v", err)
+		testenv.Missing(t, "cannot query tmux: %v", err)
 	}
 	t.Setenv("TMUX", strings.TrimSpace(string(env)))
 

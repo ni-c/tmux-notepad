@@ -1,5 +1,11 @@
 # tmux-notepad
 
+<!-- badges: start -->
+[![CI](https://github.com/ni-c/tmux-notepad/actions/workflows/ci.yml/badge.svg)](https://github.com/ni-c/tmux-notepad/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ni-c/tmux-notepad/badge)](https://scorecard.dev/viewer/?uri=github.com/ni-c/tmux-notepad)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<!-- badges: end -->
+
 Prompt queueing for coding agents in tmux — and a text queue for everything
 else in the terminal.
 
@@ -71,19 +77,37 @@ changelog entries, grouped by added, fixed and changed.
 
 ## Install
 
+One command, no Go needed:
+
 ```sh
-go install github.com/ni-c/tmux-notepad/cmd/tmux-notepad@latest
+curl -fsSL https://github.com/ni-c/tmux-notepad/releases/latest/download/install.sh | bash
 ```
 
-Or from a checkout: `make install` (to `~/.local/bin`).
+That picks the binary for your system, checks it against a checksum baked into
+the installer, puts it in `~/.local/bin`, writes a starter config if you have
+none, and binds `prefix` + <kbd>n</kbd> in `~/.tmux.conf`. Pass `--no-bind` to
+keep your config to yourself, `--prefix DIR` to install somewhere else, and
+`--uninstall` to take it back out — your notes and config stay.
 
-With [tpm](https://github.com/tmux-plugins/tpm), add to `~/.tmux.conf`:
+With [tpm](https://github.com/tmux-plugins/tpm), one line in `~/.tmux.conf`:
 
 ```tmux
 set -g @plugin 'ni-c/tmux-notepad'
 ```
 
-Or bind it yourself:
+`prefix` + <kbd>I</kbd> installs the plugin, and the binary is fetched the first
+time you press the key — inside the popup, where you can see it happen. tmux
+itself never waits on the network.
+
+From source, if you have Go:
+
+```sh
+go install github.com/ni-c/tmux-notepad/cmd/tmux-notepad@latest
+```
+
+Or `make install` from a checkout, which also goes to `~/.local/bin`.
+
+Binding it by hand works too:
 
 ```tmux
 bind n display-popup -E -w 80% -h 80% -T ' notepad ' 'tmux-notepad'
@@ -92,6 +116,26 @@ bind n display-popup -E -w 80% -h 80% -T ' notepad ' 'tmux-notepad'
 `display-popup` is used directly on purpose. `run-shell -b` has no client and
 cannot show a popup at all; without `-b` it blocks the client while the popup
 is open. The target pane is resolved by tmux-notepad itself.
+
+### Verifying a download
+
+Every release is built by a workflow in this repository and carries signed
+provenance. With the [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify install.sh --repo ni-c/tmux-notepad
+```
+
+Each release also ships `tmux-notepad.intoto.jsonl`, so the check works without
+GitHub's attestation API:
+
+```sh
+gh attestation verify install.sh --bundle tmux-notepad.intoto.jsonl \
+  --repo ni-c/tmux-notepad
+```
+
+`SHA256SUMS` covers every asset for a check by hand. What the two install paths
+ask you to trust differs a little; [SECURITY.md](SECURITY.md) spells it out.
 
 ## Configure
 
@@ -116,7 +160,10 @@ tmux-side options:
 | `@notepad-key` | `n` | key after the prefix |
 | `@notepad-width` | `80%` | popup width on first open |
 | `@notepad-height` | `80%` | popup height on first open |
-| `@notepad-command` | `tmux-notepad` | path to the binary |
+| `@notepad-command` | the plugin's own binary | path to the binary |
+
+Setting `@notepad-command` also turns off the fetch-on-first-use above: name a
+binary and that is the one that runs, always.
 
 ## Keys
 

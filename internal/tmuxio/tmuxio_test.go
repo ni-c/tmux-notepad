@@ -2,6 +2,7 @@ package tmuxio
 
 import (
 	"fmt"
+	"github.com/ni-c/tmux-notepad/internal/testenv"
 	"os"
 	"os/exec"
 	"strings"
@@ -51,7 +52,7 @@ func TestShellQuoteSurvivesRoundTrip(t *testing.T) {
 func testServer(t *testing.T) string {
 	t.Helper()
 	if _, err := exec.LookPath("tmux"); err != nil {
-		t.Skip("tmux not installed")
+		testenv.Missing(t, "tmux not installed")
 	}
 	socket := "tmux-notepad-test-" + t.Name()
 	socket = strings.NewReplacer("/", "-", " ", "-").Replace(socket)
@@ -69,13 +70,13 @@ func testServer(t *testing.T) string {
 	kill()
 	cmd := exec.Command("tmux", "-L", socket, "new-session", "-d", "-s", "t", "-x", "120", "-y", "40", "cat")
 	if out, err := cmd.CombinedOutput(); err != nil {
-		t.Skipf("cannot start a tmux server: %v: %s", err, out)
+		testenv.Missing(t, "cannot start a tmux server: %v: %s", err, out)
 	}
 	t.Cleanup(kill)
 
 	out, err := exec.Command("tmux", "-L", socket, "display-message", "-p", "-t", "t", "#{socket_path},#{pid},0").Output()
 	if err != nil {
-		t.Skipf("cannot query the test server: %v", err)
+		testenv.Missing(t, "cannot query the test server: %v", err)
 	}
 	t.Setenv("TMUX", strings.TrimSpace(string(out)))
 

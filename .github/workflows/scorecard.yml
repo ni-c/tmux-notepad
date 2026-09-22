@@ -1,0 +1,69 @@
+# OpenSSF Scorecard — weekly supply-chain self-assessment.
+#
+# Runs weekly and on every push to the default branch, uploads its findings as
+# SARIF so they land in the Security tab next to CodeQL, and publishes the score
+# so the README badge can render it.
+#
+# Three things to know before reading a result:
+#
+# - **Branch-Protection reads the ruleset, not classic branch protection.** A
+#   ruleset is public, so `GITHUB_TOKEN` can see it; classic protection needs a
+#   PAT with `repo` scope and this repository carries none. That is why the
+#   required checks and the pull-request rule live in `protect-main` rather than
+#   in the classic object, which does not exist here at all.
+# - **Code-Review scores low on a single-maintainer repository.** It counts
+#   approvals on merged pull requests, and nobody can approve their own. Dependabot
+#   pull requests do get a real review, which is what the check sees.
+# - **Fuzzing is satisfied by Go's own fuzzer.** Scorecard detects `FuzzXxx`
+#   functions in the tree, so the targets in `internal/notes` and
+#   `internal/config` count — no ClusterFuzzLite container needed for a program
+#   whose only input is the user's own notes.
+#
+# Deliberately **not** a required status check: it grades the repository, it does
+# not test the change in front of it.
+name: Scorecard
+
+on:
+  schedule:
+    - cron: '30 5 * * 1' # Mondays, half an hour ahead of the weekly CI run
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    # publish_results needs a public repository; on a private one the action fails
+    # rather than skipping. Same gate as the codeql job in ci.yml.
+    if: ${{ !github.event.repository.private }}
+    permissions:
+      security-events: write # upload the SARIF
+      id-token: write # publish_results signs the result with an OIDC token
+      contents: read
+      actions: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 5
+
+      - uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        with:
+          sarif_file: results.sarif
+          category: scorecard
