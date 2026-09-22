@@ -14,7 +14,15 @@ updates:
       charmbracelet:
         patterns:
           - github.com/charmbracelet/*
+      # The catch-all has to repeat the patterns above as exclude-patterns.
+      # Dependabot documents the first matching group as the winner and does not
+      # behave that way (dependabot-core#9765, #14143). Without this, it puts
+      # bubbletea in the charmbracelet group and bubbles in this one, and the
+      # resulting half-update is exactly the version pair the group above exists
+      # to prevent.
       go:
+        exclude-patterns:
+          - github.com/charmbracelet/*
         update-types:
           - minor
           - patch
