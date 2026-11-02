@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Updated `golang.org/x/net` to v0.62.0 for
+  [GO-2026-6860](https://pkg.go.dev/vuln/GO-2026-6860) and
+  [GO-2026-6866](https://pkg.go.dev/vuln/GO-2026-6866), two flaws in its `html`
+  package. Neither is reachable from this code (govulncheck is clean); the
+  update clears the finding of the OpenSSF Scorecard.
+
 ## [1.0.1] - 2026-09-22
 
 ### Fixed
